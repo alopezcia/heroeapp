@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, delay } from 'rxjs/operators';
 
 import { HeroeModel } from '../models/heroe.model';
 
@@ -30,7 +30,36 @@ export class HeroesService {
       ...heroe
     };
     delete heroeTmp.id;
-
     return  this.http.put( `${ this.url}/heroes/${heroe.id}.json`, heroeTmp );
+  }
+
+  getHeroe( id: string) {
+    return this.http.get(`${this.url}/heroes/${id}.json`)
+  }
+
+  getHeroes(){
+    return this.http.get(`${this.url}/heroes.json`)
+      .pipe( 
+        // map( resp => this.createArreglo(resp)) equivalente al siguiente
+        map( this.createArreglo ),
+        delay(0)
+      );
+  }
+
+  private createArreglo(heroesObj: Object ){
+    const heroes: HeroeModel[] = [];
+    if ( heroes == null ){
+      return [];
+    }
+    Object.keys( heroesObj ).forEach( key => {
+      const heroe: HeroeModel = heroesObj[key];
+      heroe.id = key;
+      heroes.push( heroe );
+    })
+    return heroes;
+  }
+
+  borrarHeroe( id: string ) {
+    return this.http.delete(`${this.url}/heroes/${id}.json`);
   }
 }
